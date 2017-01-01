@@ -13,12 +13,10 @@ import groovy.transform.ToString
     @Grab(group='ch.qos.logback', module='logback-classic', version='1.1.8')
 ])
 
-
 /** Return a tranformed string given an input string */
 interface Xformer {
     String xform(String input)
 }
-
 
 /**
  * Transform a file name created by MacOS Photos to a sortable format

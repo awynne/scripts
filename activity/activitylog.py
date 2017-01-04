@@ -54,16 +54,16 @@ class Measurement(Entry):
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "", ["ls=", "la"])
+        opts, args = getopt.getopt(argv, "", ["list=", "list-all"])
         if not opts:
             usage()
     except getopt.GetoptError:
         usage()
 
     for opt, arg in opts:
-        if opt == '--ls':
+        if opt == '--list':
             lsModel(arg)
-        elif opt == '--la':
+        elif opt == '--list-all':
             for table in db.get_tables():
                 print table.title()
         else:

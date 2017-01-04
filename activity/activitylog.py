@@ -1,7 +1,9 @@
 from peewee import *
 from pprint import pprint
 from copy import copy
-import sys, getopt, os, inspect
+import sys, os, inspect
+import optparse
+import argparse
 
 db = SqliteDatabase('activitylog.db')
 
@@ -53,26 +55,26 @@ class Measurement(Entry):
 ############
 
 def main(argv):
-    try:
-        opts, args = getopt.getopt(argv, "", ["list=", "list-all"])
-        if not opts:
-            usage()
-    except getopt.GetoptError:
-        usage()
+    args = parse_args();
 
-    for opt, arg in opts:
-        if opt == '--list':
-            lsModel(arg)
-        elif opt == '--list-all':
-            for table in db.get_tables():
-                print table.title()
-        else:
-            usage()
+    if args.list:
+        lsModel(args.list)
+    elif (args.list_all):
+        for table in db.get_tables():
+            print table.title()
+    else:
+        script = os.path.basename(__file__)
+        print "%s: you must specify an option" % script
+        exit(2)
 
-def usage():
-    script = os.path.basename(__file__)
-    print "%s --ls <modelClass>" % script
-    sys.exit(2)
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--list", metavar='<model-class>', dest='list',
+                        help='List model objects for the specified class')
+    parser.add_argument('--list-all', dest='list_all', action='store_true', 
+                        help='List all model classes')
+
+    return parser.parse_args()
 
 def lsModel(clazzStr):
     clazz = globals()[clazzStr]

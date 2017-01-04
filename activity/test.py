@@ -6,7 +6,7 @@ def createDB():
     db.create_tables([Person, ActivityType, Activity, MeasurementType, Measurement, Location])
 
 def defaultActivities():
-    root = ActivityType.create(name="BaseActivity", is_abstract=True)
+    root = ActivityType.create(name="BaseActivityType", is_abstract=True)
     mindful = ActivityType.create(name="Mindful", parent=root, is_abstract=True)
     aerobic = ActivityType.create(name="Aerobic", parent=root, is_abstract=True)
 

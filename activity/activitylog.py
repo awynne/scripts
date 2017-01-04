@@ -1,4 +1,7 @@
 from peewee import *
+from pprint import pprint
+from copy import copy
+import sys, getopt, os, inspect
 
 db = SqliteDatabase('activitylog.db')
 
@@ -24,7 +27,7 @@ class ActivityType(NamedModel):
     parent = ForeignKeyField('self', null=True, related_name='children')
 
 class MeasurementType(NamedModel):
-    description = CharField(null=True)
+    parent = ForeignKeyField('self', null=True, related_name='children')
 
 class Location(NamedModel):
     address = CharField()
@@ -49,16 +52,37 @@ class Measurement(Entry):
 # Functions
 ############
 
-def lsActivityType():
-    for atype in ActivityType.select() :
-        if atype.is_abstract == False:
-            print atype.name
+def main(argv):
+    try:
+        opts, args = getopt.getopt(argv, "", ["ls=", "la"])
+        if not opts:
+            usage()
+    except getopt.GetoptError:
+        usage()
 
-def lsLocation():
-    for loc in Location.select():
-        print "%s - %s" % (loc.name, loc.address)
+    for opt, arg in opts:
+        if opt == '--ls':
+            lsModel(arg)
+        elif opt == '--la':
+            for table in db.get_tables():
+                print table.title()
+        else:
+            usage()
 
-def lsPerson():
-    for person in Person.select():
-        print "%s %s (%s), born: %s" % (person.first, person.last, person.name, person.born)
+def usage():
+    script = os.path.basename(__file__)
+    print "%s --ls <modelClass>" % script
+    sys.exit(2)
+
+def lsModel(clazzStr):
+    clazz = globals()[clazzStr]
+
+    for item in clazz.select():
+        if item.is_abstract == False:
+            attrs = copy(vars(item)['_data'])
+            del(attrs['is_abstract'])
+            pprint(attrs)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
 

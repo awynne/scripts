@@ -60,16 +60,19 @@ def main(argv):
     args = parse_args();
 
     if args.list:
-        lsModel(args.list)
+        ls_model(args.list)
     elif (args.list_all):
         for table in db.get_tables():
             print table.title()
     elif (args.add):
         switcher = {
-            'Activity': addActivity
+            'Activity': add_activity
         }
-        func = switcher.get(args.add)
-        func()
+        try:
+            func = switcher.get(args.add)
+            func()
+        except:
+            print "Cannot add: %s" % args.add
     else:
         script = os.path.basename(__file__)
         print "%s: you must specify an option" % script
@@ -86,73 +89,96 @@ def parse_args():
 
     return parser.parse_args()
 
-def addActivity():
+def input_model(model_str):
+    while True:
+        uinput = raw_input("%s name: " % model_str)
+        if uinput == 'help':
+            print "\nAvailable %ss:" % model_str
+            ls_model(model_str)
+            print
+        else:
+            try:
+                clazz = globals()[model_str]
+                return clazz.get(clazz.name == uinput)
+            except DoesNotExist:
+                print "No such AcitivityType: %s" % uinput
+
+def input_date():
+    while True:
+        uinput = raw_input("date: ")
+        if uinput == 'help':
+            print "\nFormat: yyyy-mm-dd"
+            print
+        else:
+            try:
+                return datetime.strptime(uinput, "%Y-%m-%d")
+            except ValueError:
+                print "Invalid date: %s" % uinput
+
+def input_time(adate, prompt):
+    while True:
+        uinput = raw_input(prompt)
+        if uinput == 'help':
+            print "\nFormat: HH:MM"
+            print
+        try:
+            t = datetime.strptime(uinput, "%H:%M")
+            return datetime.combine(adate, time(t.hour, t.minute))
+        except ValueError:
+            print "Invalidtime: %s" % uinput
+
+def input_int():
+    while True:
+        uinput = raw_input("distance: ")
+        if (uinput == ""):
+            return 0
+        else:
+            try:
+                return int(dist_in)
+            except:
+                print "Not an integer: %s" % uinput
+
+def input_yn(prompt):
+    while True:
+        uinput = raw_input(prompt)
+        if (uinput == 'y' or uinput == 'Y'):
+            return True
+        elif (uinput == 'n' or uinput == 'N'):
+            return False
+
+def add_activity():
     activity = Activity()
     print "Creating new Activity [also try 'help'] ..."
 
-    type_input = raw_input("activityType: " )
-    activity.activityType = ActivityType.get(ActivityType.name == type_input)
+    activity.activityType = input_model("ActivityType")
 
-    date_in = raw_input("date: ")
-    adate = datetime.strptime(date_in, "%Y-%m-%d")
+    adate = input_date()
+    activity.start = input_time(adate, "start time: ")
+    activity.end = input_time(adate, "end time: ")
 
-    start_in = raw_input("start time: ")
-    start_t = datetime.strptime(start_in, "%H:%M")
-    activity.start = datetime.combine(adate, time(start_t.hour, start_t.minute))
+    activity.person = input_model("Person")
+    activity.location = input_model("Location")
+    activity.distance = input_int()
 
-    end_in = raw_input("end time: ")
-    end_t = datetime.strptime(end_in, "%H:%M")
-    activity.end = datetime.combine(adate, time(end_t.hour, end_t.minute))
+    print "\nCreated Activity:"
+    ls_instance(activity)
 
-    person_in = raw_input("person name: ")
-    activity.person = Person.get(Person.name == person_in)
+    save = input_yn("\nSave Activity (y/n)? ")
+    if save == True:
+        activity.save()
+        print "Saved"
+    else:
+        print "Not saved"
 
-    location_in = raw_input("location: ")
-    activity.location = Location.get(Location.name == location_in)
-
-    dist_in = raw_input("distance: ")
-    if (dist_in != ""):
-        activity.distance = int(dist_in)
-
-    activity.save()
-    print "\nCreated:"
-    lsInstance(activity)
-
-def addModel(clazzStr):
-    clazz = globals()[clazzStr]
-    instance = clazz()
-
-    attributes = inspect.getmembers(clazz, lambda a:not(inspect.isroutine(a)))
-    attributes = [a for a in attributes if not(a[0].startswith('_') 
-        or a[0].endswith('_id') 
-        or a[0] == 'id'
-        or a[0] == 'is_abstract' 
-        or a[0] == 'dirty_fields'
-        or a[0] == 'DoesNotExist'
-    )]
-
-    for attr in attributes:
-        field = str(attr[0])
-        print "field: %s" % field
-        try: 
-            x = getattr(instance, field)
-            print "%s [%s]: " % (field, x)
-        except DoesNotExist:
-            print "%s []: " % (field)
-        print
-
-           #setattr(instance, field, 88)
-
-def lsModel(clazzStr):
+def ls_model(clazzStr):
     clazz = globals()[clazzStr]
     for item in clazz.select():
         if item.is_abstract == False:
-            lsInstance(item)
+            ls_instance(item)
 
-def lsInstance(instance):
+def ls_instance(instance):
     attrs = copy(vars(instance)['_data'])
     del(attrs['is_abstract'])
-    print
     pprint(attrs)
 
 if __name__ == '__main__':

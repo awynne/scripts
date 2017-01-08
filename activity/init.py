@@ -27,13 +27,14 @@ def defaultLocations():
     Location.create(name="YogaFlowSouth", longname="Yoga Flow South Hills", address="250 Mount Lebanon Boulevard, Pittsburgh, PA 15234")
     Location.create(name="HIP", longname="Himalayan Institute, Pittsburgh", address="300 Beverly Rd, Pittsburgh, PA 15216")
     Location.create(name="Gilfilan", longname="Gilfilan Farms", address="130 Orr Rd, Upper St Clair, PA 15241")
+    Location.create(name="Home", longname="Home", address="172 Topsfield Rd, Pittsburgh, PA 15241")
 
 def testEntries():
     adam=Person.select().where(Person.name =="adam")
     hiking=ActivityType.select().where(ActivityType.name == "Hiking")
     gilfilan=Location.select().where(Location.name == "Gilfilan")
 
-    Activity.create(start=datetime(2016,1,2,10,00,00), end=datetime.now(), person=adam, activityType=hiking, location=gilfilan, distance=3)
+    #Activity.create(start=datetime(2016,1,2,10,00,00), end=datetime.now(), person=adam, activityType=hiking, location=gilfilan, distance=3)
 
 def init():
     createDB()

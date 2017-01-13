@@ -1,7 +1,7 @@
 from peewee import *
 from pprint import pprint
 from copy import copy
-import sys, os, inspect
+import sys, os, inspect, traceback
 import argparse
 import inspect
 from datetime import datetime
@@ -73,6 +73,7 @@ def main(argv):
             func()
         except:
             print "Cannot add: %s" % args.add
+            traceback.print_exc()
     else:
         script = os.path.basename(__file__)
         print "%s: you must specify an option" % script
@@ -90,26 +91,34 @@ def parse_args():
     return parser.parse_args()
 
 def input_model(model_str):
+    clazz = globals()[model_str]
+    instance = clazz.select().where(clazz.is_abstract == False).order_by(clazz.name)[0]
+
     while True:
-        uinput = raw_input("%s name: " % model_str)
+        uinput = raw_input("%s name [%s]: " % (model_str, instance.name))
         if uinput == 'help':
             print "\nAvailable %ss:" % model_str
             ls_model(model_str)
             print
         else:
             try:
+                if uinput == '':
+                    uinput = instance.name
                 clazz = globals()[model_str]
                 return clazz.get(clazz.name == uinput)
             except DoesNotExist:
                 print "No such AcitivityType: %s" % uinput
 
 def input_date():
+    default = datetime.today().strftime("%Y-%m-%d")
     while True:
-        uinput = raw_input("date: ")
+        uinput = raw_input("date [%s]: " % default)
         if uinput == 'help':
             print "\nFormat: yyyy-mm-dd"
             print
         else:
+            if uinput == '':
+                uinput = default
             try:
                 return datetime.strptime(uinput, "%Y-%m-%d")
             except ValueError:

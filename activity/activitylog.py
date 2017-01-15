@@ -66,7 +66,8 @@ def main(argv):
             print table.title()
     elif (args.add):
         switcher = {
-            'Activity': add_activity
+            'Activity': add_activity,
+            'Location': add_location
         }
         try:
             func = switcher.get(args.add)
@@ -143,9 +144,18 @@ def input_int():
             return 0
         else:
             try:
-                return int(dist_in)
+                return int(uinput)
             except:
                 print "Not an integer: %s" % uinput
+
+def input_string(prompt, help_text):
+    while True:
+        uinput = raw_input("%s: " % prompt)
+
+        if uinput == "help":
+            print help_text
+        elif uinput != "":
+            return str(uinput)
 
 def input_yn(prompt):
     while True:
@@ -154,6 +164,21 @@ def input_yn(prompt):
             return True
         elif (uinput == 'n' or uinput == 'N'):
             return False
+
+def add_location():
+    print "Creating new Location [also try 'help'] ..."
+
+    nm = input_string("name", "name is a unique identifier")
+    addr = input_string("address", "Example: 123 Main St, City, State 12345")
+
+    print "\nCreated Location: {name: %s, address: %s}" % (nm, addr)
+
+    save = input_yn("\nSave Location (y/n)? ")
+    if save == True:
+        Location.create(name=nm, address=addr)
+        print "Saved"
+    else:
+        print "Not saved"
 
 def add_activity():
     activity = Activity()

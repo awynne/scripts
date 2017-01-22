@@ -45,7 +45,7 @@ class Activity(Entry):
     start = DateTimeField()
     end = DateTimeField()
     activityType = ForeignKeyField(ActivityType)
-    distance = IntegerField(default=0)
+    distance = FloatField(default=0.0)
 
 class Measurement(Entry):
     time = DateTimeField()
@@ -108,7 +108,7 @@ def input_model(model_str):
                 clazz = globals()[model_str]
                 return clazz.get(clazz.name == uinput)
             except DoesNotExist:
-                print "No such AcitivityType: %s" % uinput
+                print "No such %s: %s" % (model_str,uinput)
 
 def input_date():
     default = datetime.today().strftime("%Y-%m-%d")
@@ -137,16 +137,17 @@ def input_time(adate, prompt):
         except ValueError:
             print "Invalidtime: %s" % uinput
 
-def input_int():
+
+def input_float(prompt):
     while True:
-        uinput = raw_input("distance: ")
+        uinput = raw_input("%s: " % prompt)
         if (uinput == ""):
             return 0
         else:
             try:
-                return int(uinput)
+                return float(uinput)
             except:
-                print "Not an integer: %s" % uinput
+                print "Not a valid float: %s" % uinput
 
 def input_string(prompt, help_text):
     while True:
@@ -192,7 +193,7 @@ def add_activity():
 
     activity.person = input_model("Person")
     activity.location = input_model("Location")
-    activity.distance = input_int()
+    activity.distance = input_float("distance")
 
     print "\nCreated Activity:"
     ls_instance(activity)
